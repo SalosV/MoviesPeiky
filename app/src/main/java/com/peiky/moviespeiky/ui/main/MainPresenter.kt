@@ -17,14 +17,19 @@ class MainPresenter(private  val moviesRepository: MoviesRepository): Scope by S
 
     private var view: View? = null
 
+
     fun onCreate(view: View) {
         initScope()
         this.view = view
+        getData(1)
+    }
+
+    fun getData(page: Int) {
 
         launch {
-            view.showProgress()
-            view.updateData(moviesRepository.findPopularMovies().results)
-            view.hideProgress()
+            view?.showProgress()
+            view?.updateData(moviesRepository.findMovies(page).results)
+            view?.hideProgress()
         }
     }
 

@@ -14,8 +14,9 @@ class MoviesAdapter(private val listener: (Movie) -> Unit): RecyclerView.Adapter
 
     var movies: List<Movie> = listOf()
 
-    fun updataList(movies: List<Movie>) {
+    fun updateList(movies: List<Movie>) {
         this.movies = movies
+        notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

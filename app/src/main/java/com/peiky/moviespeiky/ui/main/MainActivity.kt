@@ -1,8 +1,8 @@
 package com.peiky.moviespeiky.ui.main
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.peiky.moviespeiky.R
@@ -17,6 +17,11 @@ class MainActivity : AppCompatActivity(), MainPresenter.View {
     private val listMovies: RecyclerView by lazy { findViewById<RecyclerView>(R.id.list) }
     private val presenter : MainPresenter by lazy { MainPresenter(MoviesRepository()) }
     private val adapter = MoviesAdapter(presenter::onMovieClicked)
+    private var visibleItemCount: Int = 0
+    private var pastVisibleItemCount: Int = 0
+    private var totalItemCount = 0
+    private var loading: Boolean = true
+    private var pageId: Int = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,8 +46,35 @@ class MainActivity : AppCompatActivity(), MainPresenter.View {
     }
 
     override fun updateData(movies: List<Movie>) {
-        adapter.updataList(movies)
-        adapter.notifyDataSetChanged()
+        adapter.updateList(movies)
+        loading = true
+
+        listMovies.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                if (dy > 0) {
+                    visibleItemCount = listMovies.layoutManager!!.childCount
+                    totalItemCount = listMovies.layoutManager!!.itemCount
+                    pastVisibleItemCount = (recyclerView.layoutManager as LinearLayoutManager?)!!.findFirstVisibleItemPosition()
+
+                    if (loading) {
+                        if (visibleItemCount + pastVisibleItemCount >= totalItemCount) {
+                            loading = false
+                            pageId++
+                            presenter.getData(pageId)
+
+                        }
+                    }
+
+                }
+
+            }
+        })
+
+        if (movies.isNotEmpty()) {
+            listMovies.scrollToPosition(0)
+        }
     }
 
     override fun navigateTo(movie: Movie) {
